@@ -61,10 +61,10 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>04/01/2017 11:08:30</publishTime>
     </File>
     <File Include="bin/DipperRestService.dll">
-      <publishTime>04/01/2017 16:16:55</publishTime>
+      <publishTime>04/01/2017 16:36:02</publishTime>
     </File>
     <File Include="bin/DipperRestService.pdb">
-      <publishTime>04/01/2017 16:16:55</publishTime>
+      <publishTime>04/01/2017 16:36:02</publishTime>
     </File>
     <File Include="bin/EntityFramework.dll">
       <publishTime>04/01/2017 11:08:21</publishTime>
@@ -138,17 +138,32 @@ by editing this MSBuild file. In order to learn more about this please visit htt
     <File Include="bin/ru/System.Spatial.resources.dll">
       <publishTime>04/01/2017 11:08:30</publishTime>
     </File>
+    <File Include="bin/System.Net.Http.dll">
+      <publishTime>09/26/2012 03:16:08</publishTime>
+    </File>
+    <File Include="bin/System.Net.Http.Formatting.dll">
+      <publishTime>04/01/2017 11:08:28</publishTime>
+    </File>
+    <File Include="bin/System.Net.Http.WebRequest.dll">
+      <publishTime>09/26/2012 03:16:08</publishTime>
+    </File>
     <File Include="bin/System.Spatial.dll">
       <publishTime>04/01/2017 11:08:30</publishTime>
     </File>
     <File Include="bin/System.Web.Helpers.dll">
       <publishTime>04/01/2017 11:08:27</publishTime>
     </File>
+    <File Include="bin/System.Web.Http.dll">
+      <publishTime>04/01/2017 11:08:28</publishTime>
+    </File>
     <File Include="bin/System.Web.Http.OData.dll">
       <publishTime>04/01/2017 11:08:31</publishTime>
     </File>
     <File Include="bin/System.Web.Http.Tracing.dll">
       <publishTime>04/01/2017 11:08:31</publishTime>
+    </File>
+    <File Include="bin/System.Web.Http.WebHost.dll">
+      <publishTime>04/01/2017 11:08:28</publishTime>
     </File>
     <File Include="bin/System.Web.Mvc.dll">
       <publishTime>04/01/2017 11:08:27</publishTime>

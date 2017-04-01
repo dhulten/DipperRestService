@@ -13,7 +13,7 @@ namespace ConsoleApplication1
         static void Main(string[] args)
         {
             HttpClient client = new HttpClient();
-            client.BaseAddress = new Uri("http://localhost:8011/api/Dipper");
+            client.BaseAddress = new Uri("http://52.41.79.4/api/Dipper");
             client.DefaultRequestHeaders.Add("action", "GetCheckins");
 
             HttpResponseMessage response = client.GetAsync("").Result;

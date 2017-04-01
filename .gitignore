@@ -1,2 +1,31 @@
+[Bb]in
+[Dd]ebug*/
+obj/
+[Rr]elease*/
+_ReSharper*/
 *.suo
+MainWeb/packages/
+ClientBin*/
+QA module/Packages*/
+ScoutingApp/Packages*/
+SharedLibs/SoccerSpy.Db/SoccerSpy.Db.dbmdl
+SharedLibs/SoccerSpy.Db/SoccerSpy.Db.sqlproj.user
+/*.user
+*.user
 *.sln
+
+# NuGet Packages
+*.nupkg
+# The packages folder can be ignored because of Package Restore
+**/packages/*
+# except build/, which is used as an MSBuild target.
+!**/packages/build/
+# Uncomment if necessary however generally it will be regenerated when needed
+#!**/packages/repositories.config
+# NuGet v3's project.json files produces more ignoreable files
+*.nuget.props
+*.nuget.targets
+*.pubxml
+
+## -- JetBrains -- 
+**/.idea/*

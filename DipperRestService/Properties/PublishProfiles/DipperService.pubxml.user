@@ -61,10 +61,10 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>04/01/2017 11:08:30</publishTime>
     </File>
     <File Include="bin/DipperRestService.dll">
-      <publishTime>04/01/2017 16:36:02</publishTime>
+      <publishTime>04/02/2017 15:26:58</publishTime>
     </File>
     <File Include="bin/DipperRestService.pdb">
-      <publishTime>04/01/2017 16:36:02</publishTime>
+      <publishTime>04/02/2017 15:26:57</publishTime>
     </File>
     <File Include="bin/EntityFramework.dll">
       <publishTime>04/01/2017 11:08:21</publishTime>
@@ -128,6 +128,9 @@ by editing this MSBuild file. In order to learn more about this please visit htt
     </File>
     <File Include="bin/Newtonsoft.Json.dll">
       <publishTime>04/01/2017 11:08:27</publishTime>
+    </File>
+    <File Include="bin/NLog.dll">
+      <publishTime>12/07/2016 10:10:31</publishTime>
     </File>
     <File Include="bin/ru/Microsoft.Data.Edm.resources.dll">
       <publishTime>04/01/2017 11:08:30</publishTime>
@@ -478,7 +481,7 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>04/01/2017 11:08:13</publishTime>
     </File>
     <File Include="Web.config">
-      <publishTime>04/01/2017 12:23:30</publishTime>
+      <publishTime>04/02/2017 15:26:58</publishTime>
     </File>
   </ItemGroup>
 </Project>

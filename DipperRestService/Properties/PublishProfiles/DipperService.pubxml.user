@@ -61,10 +61,10 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>04/01/2017 11:08:30</publishTime>
     </File>
     <File Include="bin/DipperRestService.dll">
-      <publishTime>04/04/2017 15:53:01</publishTime>
+      <publishTime>04/04/2017 18:03:38</publishTime>
     </File>
     <File Include="bin/DipperRestService.pdb">
-      <publishTime>04/04/2017 15:53:01</publishTime>
+      <publishTime>04/04/2017 18:03:38</publishTime>
     </File>
     <File Include="bin/EntityFramework.dll">
       <publishTime>04/01/2017 11:08:21</publishTime>

@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Web;
 using System.Web.Http;
 using System.Web.Management;
+using System.Web.Mvc;
 using Newtonsoft.Json;
 using NLog;
 
@@ -26,7 +27,7 @@ namespace DipperRestService.Controllers
         private const string Result = "Result";
         private const int MaxCheckinsLogged = 4;
 
-        public string[] Get()
+        public JsonResult Get()
         {
             try
             {
@@ -43,16 +44,16 @@ namespace DipperRestService.Controllers
                     _logger.Info("Getting checkins at " + DateTime.UtcNow);
                     using (StreamReader sr = new StreamReader(_folderPath + _checkinFilepath))
                     {
-                        return new [] {sr.ReadLine()};
+                        return new JsonResult {Data = sr.ReadLine()};
                     }
                 }
 
-                return new [] {String.Format("Please include a valid action header, the choices are: {0}", GetCheckins)};
+                return new JsonResult { Data = String.Format("Please include a valid action header, the choices are: {0}", GetCheckins)}; 
             }
             catch (Exception ex)
             {
                 _logger.Error(ex);
-                return new []{DefaultErrorResponse};
+                return new JsonResult { Data = DefaultErrorResponse }; 
             }
         }
 
@@ -92,6 +93,8 @@ namespace DipperRestService.Controllers
             return ctx.Request.Headers[Action];
         }
 
+
+        // NEED TO FORMAT AS JSON
         private string CheckinAndGetImageStatus()
         {
             _logger.Info("Attempting to checkin and get image status at {0} ", DateTime.UtcNow);

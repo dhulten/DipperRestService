@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Web;
 using System.Web.Http;
 using System.Web.Management;
+using Newtonsoft.Json;
 using NLog;
 
 namespace DipperRestService.Controllers
@@ -23,6 +24,7 @@ namespace DipperRestService.Controllers
         private const string Checkin = "Checkin";
         private const string DefaultErrorResponse = "Internal Server Error";
         private const string Result = "Result";
+        private const int MaxCheckinsLogged = 4;
 
         public string[] Get()
         {
@@ -41,7 +43,7 @@ namespace DipperRestService.Controllers
                     _logger.Info("Getting checkins at " + DateTime.UtcNow);
                     using (StreamReader sr = new StreamReader(_folderPath + _checkinFilepath))
                     {
-                        return sr.ReadLine().Split(',');
+                        return new [] {sr.ReadLine()};
                     }
                 }
 
@@ -92,30 +94,31 @@ namespace DipperRestService.Controllers
 
         private string CheckinAndGetImageStatus()
         {
-            _logger.Info("Attempting to read in {0} at {1} ", _checkinFilepath, DateTime.UtcNow);
+            _logger.Info("Attempting to checkin and get image status at {0} ", DateTime.UtcNow);
 
             List<string> previousCheckins = new List<string>();
 
             using (StreamReader sr = new StreamReader(_folderPath + _checkinFilepath))
             {
-                previousCheckins = sr.ReadLine().Split(',').ToList();
+                string checkinsJson = sr.ReadLine();
+
+                if (!string.IsNullOrEmpty(checkinsJson))
+                {
+                    previousCheckins = JsonConvert.DeserializeObject<List<string>>(checkinsJson);
+                }
             }
 
-            if (previousCheckins.Count > 5)
+            if (previousCheckins.Count > MaxCheckinsLogged)
             {
-                previousCheckins = previousCheckins.Skip(1).ToList();
+                previousCheckins = previousCheckins.Take(MaxCheckinsLogged).ToList();
             }
 
-            previousCheckins.Add(DateTime.UtcNow.ToString("yyyy-MM-dd hh:mm"));
-
-            _logger.Info("Attempting to write out to {0} at {1} ", _checkinFilepath, DateTime.UtcNow);
+            previousCheckins.Insert(0, DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm"));
 
             using (StreamWriter sw = new StreamWriter(_folderPath + _checkinFilepath, false))
             {
-                sw.Write(string.Join(",", previousCheckins));
+                sw.Write(JsonConvert.SerializeObject(previousCheckins));
             }
-
-            _logger.Info("Attempting to read in {0} at {1}", _newImageFilepath, DateTime.UtcNow);
 
             string responseVal = String.Empty;
 
@@ -126,7 +129,6 @@ namespace DipperRestService.Controllers
 
             if (responseVal == true.ToString())
             {
-                _logger.Info("Attempting to write out to {0} at {1}", _newImageFilepath, DateTime.UtcNow);
                 using (StreamWriter sw = new StreamWriter(_folderPath + _newImageFilepath, false))
                 {
                     sw.Write(false.ToString());

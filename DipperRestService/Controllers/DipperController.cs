@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Web;
 using System.Web.Http;
 using System.Web.Management;
@@ -19,11 +20,14 @@ namespace DipperRestService.Controllers
     {
         private string _folderPath = string.Empty;
         private string _checkinFilepath = string.Empty;
-        private string _newImageFilepath = string.Empty;
+        private string _imageStatusFilepath = string.Empty;
+        private string _ImageFilename = string.Empty;
         private Logger _logger = LogManager.GetCurrentClassLogger();
         private const string Action = "Action";
         private const string GetCheckins = "GetCheckins";
         private const string Checkin = "Checkin";
+        private const string UploadImage = "UploadImage";
+        private const string ImageBytes = "ImageBytes";
         private const string DefaultErrorResponse = "Internal Server Error";
         private const string Result = "Result";
         private const int MaxCheckinsLogged = 4;
@@ -32,8 +36,8 @@ namespace DipperRestService.Controllers
         {
             try
             {
-                _logger.Info("Get message received at " + DateTime.UtcNow);
-                string action = GetActionType(HttpContext.Current);
+                _logger.Info("Get message received");
+                string action = GetHeaderByKey(Action);
             
                 if (string.IsNullOrEmpty(_folderPath))
                 {
@@ -42,7 +46,7 @@ namespace DipperRestService.Controllers
 
                 if (action == GetCheckins)
                 {
-                    _logger.Info("Getting checkins at " + DateTime.UtcNow);
+                    _logger.Info("Getting checkins");
                     using (StreamReader sr = new StreamReader(_folderPath + _checkinFilepath))
                     {
                         return new JsonResult {Data = sr.ReadLine()};
@@ -62,19 +66,52 @@ namespace DipperRestService.Controllers
         {
             try
             {
-                _logger.Info("Post message received at " + DateTime.UtcNow);
+                _logger.Info("Post message received");
                 if (string.IsNullOrEmpty(_folderPath))
                 {
                     ReadConfigValues();
                 }
 
-                string action = GetActionType(HttpContext.Current);
+                string action = GetHeaderByKey(Action);
 
                 if (action == Checkin)
                 {
                     string imageStatus = CheckinAndGetImageStatus();
-                    HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                    response.Headers.Add(Result, imageStatus);
+
+                    HttpResponseMessage response = new HttpResponseMessage();
+                    if (imageStatus == DefaultErrorResponse)
+                    {
+                        response.StatusCode = HttpStatusCode.InternalServerError;
+                    }
+                    else
+                    {
+                        response.StatusCode = HttpStatusCode.OK;
+                        response.Headers.Add(Result, imageStatus);    
+                    }
+                    
+                    return response;
+                }
+                
+                if (action == UploadImage)
+                {
+                    string imageByteString;
+                    HttpResponseMessage response = new HttpResponseMessage();
+
+                    try
+                    {
+                        imageByteString = HttpContext.Current.Request.Params[ImageBytes];
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error(ex);
+                        response.StatusCode = HttpStatusCode.BadRequest;
+                        return response;
+                    }
+                    
+                    bool imageSaveSuccess = SaveImage(imageByteString);
+
+                    response.StatusCode = imageSaveSuccess ? HttpStatusCode.OK : HttpStatusCode.InternalServerError;
+
                     return response;
                 }
 
@@ -88,65 +125,109 @@ namespace DipperRestService.Controllers
             }
         }
 
-        private string GetActionType(HttpContext current)
+        private string GetHeaderByKey(string key)
         {
             var ctx = HttpContext.Current;
-            return ctx.Request.Headers[Action];
+            return ctx.Request.Headers[key];
         }
 
 
-        // NEED TO FORMAT AS JSON
+        private bool SaveImage(string imageByteStr)
+        {
+            try
+            {
+                Byte[] imageBytes = Convert.FromBase64String(imageByteStr);
+
+                string currDir = AppDomain.CurrentDomain.BaseDirectory;
+                string fullImagePath = currDir + _ImageFilename;
+
+                FileInfo imageInfo = new FileInfo(fullImagePath);
+
+                if (imageInfo.Exists)
+                {
+                    File.Delete(fullImagePath);
+                }
+
+                File.WriteAllBytes(fullImagePath, imageBytes);
+
+                // update new image status
+                using (StreamWriter sw = new StreamWriter(_folderPath + _imageStatusFilepath, false))
+                {
+                    sw.Write(true.ToString());
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex);
+                return false;
+            }
+
+        }
+
         private string CheckinAndGetImageStatus()
         {
-            _logger.Info("Attempting to checkin and get image status at {0} ", DateTime.UtcNow);
-
-            List<Checkin> previousCheckins = new List<Checkin>();
-
-            using (StreamReader sr = new StreamReader(_folderPath + _checkinFilepath))
+            try
             {
-                string checkinsJson = sr.ReadLine();
+                _logger.Info("Attempting to checkin and get image status");
 
-                if (!string.IsNullOrEmpty(checkinsJson))
+                List<Checkin> previousCheckins = new List<Checkin>();
+
+                using (StreamReader sr = new StreamReader(_folderPath + _checkinFilepath))
                 {
-                    previousCheckins = JsonConvert.DeserializeObject<List<Checkin>>(checkinsJson);
+                    string checkinsJson = sr.ReadLine();
+
+                    if (!string.IsNullOrEmpty(checkinsJson))
+                    {
+                        previousCheckins = JsonConvert.DeserializeObject<List<Checkin>>(checkinsJson);
+                    }
                 }
-            }
 
-            if (previousCheckins.Count > MaxCheckinsLogged)
-            {
-                previousCheckins = previousCheckins.Take(MaxCheckinsLogged).ToList();
-            }
-
-            previousCheckins.Insert(0, new Checkin(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm")));
-
-            using (StreamWriter sw = new StreamWriter(_folderPath + _checkinFilepath, false))
-            {
-                sw.Write(JsonConvert.SerializeObject(previousCheckins));
-            }
-
-            string responseVal = String.Empty;
-
-            using (StreamReader sr = new StreamReader(_folderPath + _newImageFilepath))
-            {
-                responseVal = sr.ReadLine();
-            }
-
-            if (responseVal == true.ToString())
-            {
-                using (StreamWriter sw = new StreamWriter(_folderPath + _newImageFilepath, false))
+                if (previousCheckins.Count > MaxCheckinsLogged)
                 {
-                    sw.Write(false.ToString());
+                    previousCheckins = previousCheckins.Take(MaxCheckinsLogged).ToList();
                 }
+
+                previousCheckins.Insert(0, new Checkin(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm")));
+
+                using (StreamWriter sw = new StreamWriter(_folderPath + _checkinFilepath, false))
+                {
+                    sw.Write(JsonConvert.SerializeObject(previousCheckins));
+                }
+
+                string responseVal = String.Empty;
+
+                using (StreamReader sr = new StreamReader(_folderPath + _imageStatusFilepath))
+                {
+                    responseVal = sr.ReadLine();
+                }
+
+                if (responseVal == true.ToString())
+                {
+                    using (StreamWriter sw = new StreamWriter(_folderPath + _imageStatusFilepath, false))
+                    {
+                        sw.Write(false.ToString());
+                    }
+                }
+
+                return responseVal;
+
+                }
+            catch (Exception ex)
+            {
+                _logger.Error(ex);
+                return DefaultErrorResponse;
             }
 
-            return responseVal;
         }
 
         private void ReadConfigValues()
         {
             _folderPath = ConfigurationManager.AppSettings["FolderPath"];
             _checkinFilepath = ConfigurationManager.AppSettings["CheckinFilepath"];
-            _newImageFilepath = ConfigurationManager.AppSettings["NewImageFilepath"];
+            _imageStatusFilepath = ConfigurationManager.AppSettings["ImageStatusFilepath"];
+            _ImageFilename = ConfigurationManager.AppSettings["ImageFilename"];
         }
     }
 }

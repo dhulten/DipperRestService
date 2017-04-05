@@ -61,10 +61,10 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>04/01/2017 11:08:30</publishTime>
     </File>
     <File Include="bin/DipperRestService.dll">
-      <publishTime>04/05/2017 10:08:40</publishTime>
+      <publishTime>04/05/2017 17:09:18</publishTime>
     </File>
     <File Include="bin/DipperRestService.pdb">
-      <publishTime>04/05/2017 10:08:40</publishTime>
+      <publishTime>04/05/2017 17:09:18</publishTime>
     </File>
     <File Include="bin/EntityFramework.dll">
       <publishTime>04/01/2017 11:08:21</publishTime>
@@ -481,7 +481,7 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>04/01/2017 11:08:13</publishTime>
     </File>
     <File Include="Web.config">
-      <publishTime>04/05/2017 10:08:48</publishTime>
+      <publishTime>04/05/2017 16:59:50</publishTime>
     </File>
   </ItemGroup>
 </Project>

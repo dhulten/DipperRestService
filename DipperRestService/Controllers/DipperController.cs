@@ -9,6 +9,7 @@ using System.Web;
 using System.Web.Http;
 using System.Web.Management;
 using System.Web.Mvc;
+using DipperRestService.Models;
 using Newtonsoft.Json;
 using NLog;
 
@@ -48,12 +49,12 @@ namespace DipperRestService.Controllers
                     }
                 }
 
-                return new JsonResult { Data = String.Format("Please include a valid action header, the choices are: {0}", GetCheckins)}; 
+                return new JsonResult {Data = String.Format("Please include a valid action header, the choices are: {0}", GetCheckins)}; 
             }
             catch (Exception ex)
             {
                 _logger.Error(ex);
-                return new JsonResult { Data = DefaultErrorResponse }; 
+                return new JsonResult {Data = DefaultErrorResponse};
             }
         }
 
@@ -99,7 +100,7 @@ namespace DipperRestService.Controllers
         {
             _logger.Info("Attempting to checkin and get image status at {0} ", DateTime.UtcNow);
 
-            List<string> previousCheckins = new List<string>();
+            List<Checkin> previousCheckins = new List<Checkin>();
 
             using (StreamReader sr = new StreamReader(_folderPath + _checkinFilepath))
             {
@@ -107,7 +108,7 @@ namespace DipperRestService.Controllers
 
                 if (!string.IsNullOrEmpty(checkinsJson))
                 {
-                    previousCheckins = JsonConvert.DeserializeObject<List<string>>(checkinsJson);
+                    previousCheckins = JsonConvert.DeserializeObject<List<Checkin>>(checkinsJson);
                 }
             }
 
@@ -116,7 +117,7 @@ namespace DipperRestService.Controllers
                 previousCheckins = previousCheckins.Take(MaxCheckinsLogged).ToList();
             }
 
-            previousCheckins.Insert(0, DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm"));
+            previousCheckins.Insert(0, new Checkin(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm")));
 
             using (StreamWriter sw = new StreamWriter(_folderPath + _checkinFilepath, false))
             {

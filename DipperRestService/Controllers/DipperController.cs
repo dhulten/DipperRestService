@@ -21,7 +21,7 @@ namespace DipperRestService.Controllers
         private string _folderPath = string.Empty;
         private string _checkinFilepath = string.Empty;
         private string _imageStatusFilepath = string.Empty;
-        private string _ImageFilename = string.Empty;
+        private string _imageFilename = string.Empty;
         private Logger _logger = LogManager.GetCurrentClassLogger();
         private const string Action = "Action";
         private const string GetCheckins = "GetCheckins";
@@ -115,7 +115,7 @@ namespace DipperRestService.Controllers
                     return response;
                 }
 
-                // if no specific action is taken to return a different code, return a bad request
+                // if no specific action is taken return a bad request
                 return new HttpResponseMessage(HttpStatusCode.BadRequest);
             }
             catch (Exception ex)
@@ -139,7 +139,7 @@ namespace DipperRestService.Controllers
                 Byte[] imageBytes = Convert.FromBase64String(imageByteStr);
 
                 string currDir = AppDomain.CurrentDomain.BaseDirectory;
-                string fullImagePath = currDir + _ImageFilename;
+                string fullImagePath = currDir + _imageFilename;
 
                 FileInfo imageInfo = new FileInfo(fullImagePath);
 
@@ -227,7 +227,7 @@ namespace DipperRestService.Controllers
             _folderPath = ConfigurationManager.AppSettings["FolderPath"];
             _checkinFilepath = ConfigurationManager.AppSettings["CheckinFilepath"];
             _imageStatusFilepath = ConfigurationManager.AppSettings["ImageStatusFilepath"];
-            _ImageFilename = ConfigurationManager.AppSettings["ImageFilename"];
+            _imageFilename = ConfigurationManager.AppSettings["ImageFilename"];
         }
     }
 }

@@ -27,6 +27,8 @@ namespace DipperRestService.Controllers
         private const string GetCheckins = "GetCheckins";
         private const string Checkin = "Checkin";
         private const string UploadImage = "UploadImage";
+        private const string CheckinMode = "CheckinMode";
+        private const string AdminMode = "AdminMode";
         private const string ImageBytes = "ImageBytes";
         private const string DefaultErrorResponse = "Internal Server Error";
         private const string Result = "Result";
@@ -76,7 +78,8 @@ namespace DipperRestService.Controllers
 
                 if (action == Checkin)
                 {
-                    string imageStatus = CheckinAndGetImageStatus();
+                    string checkinMode = GetHeaderByKey(CheckinMode);
+                    string imageStatus = CheckinAndGetImageStatus(checkinMode);
 
                     HttpResponseMessage response = new HttpResponseMessage();
                     if (imageStatus == DefaultErrorResponse)
@@ -166,54 +169,62 @@ namespace DipperRestService.Controllers
 
         }
 
-        private string CheckinAndGetImageStatus()
+        private string CheckinAndGetImageStatus(string checkinMode)
         {
             try
             {
                 _logger.Info("Attempting to checkin and get image status");
 
-                List<Checkin> previousCheckins = new List<Checkin>();
-
-                using (StreamReader sr = new StreamReader(_folderPath + _checkinFilepath))
+                if (checkinMode != AdminMode)
                 {
-                    string checkinsJson = sr.ReadLine();
+                    List<Checkin> previousCheckins = new List<Checkin>();
 
-                    if (!string.IsNullOrEmpty(checkinsJson))
+                    using (StreamReader sr = new StreamReader(_folderPath + _checkinFilepath))
                     {
-                        previousCheckins = JsonConvert.DeserializeObject<List<Checkin>>(checkinsJson);
+                        string checkinsJson = sr.ReadLine();
+
+                        if (!string.IsNullOrEmpty(checkinsJson))
+                        {
+                            previousCheckins = JsonConvert.DeserializeObject<List<Checkin>>(checkinsJson);
+                        }
                     }
-                }
 
-                if (previousCheckins.Count > MaxCheckinsLogged)
-                {
-                    previousCheckins = previousCheckins.Take(MaxCheckinsLogged).ToList();
-                }
-
-                previousCheckins.Insert(0, new Checkin(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm")));
-
-                using (StreamWriter sw = new StreamWriter(_folderPath + _checkinFilepath, false))
-                {
-                    sw.Write(JsonConvert.SerializeObject(previousCheckins));
-                }
-
-                string responseVal = String.Empty;
-
-                using (StreamReader sr = new StreamReader(_folderPath + _imageStatusFilepath))
-                {
-                    responseVal = sr.ReadLine();
-                }
-
-                if (responseVal == true.ToString())
-                {
-                    using (StreamWriter sw = new StreamWriter(_folderPath + _imageStatusFilepath, false))
+                    if (previousCheckins.Count > MaxCheckinsLogged)
                     {
-                        sw.Write(false.ToString());
+                        previousCheckins = previousCheckins.Take(MaxCheckinsLogged).ToList();
                     }
+
+                    previousCheckins.Insert(0, new Checkin(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm")));
+
+                    using (StreamWriter sw = new StreamWriter(_folderPath + _checkinFilepath, false))
+                    {
+                        sw.Write(JsonConvert.SerializeObject(previousCheckins));
+                    }
+
+                    string responseVal = String.Empty;
+
+                    using (StreamReader sr = new StreamReader(_folderPath + _imageStatusFilepath))
+                    {
+                        responseVal = sr.ReadLine();
+                    }
+
+                    if (responseVal == true.ToString())
+                    {
+                        using (StreamWriter sw = new StreamWriter(_folderPath + _imageStatusFilepath, false))
+                        {
+                            sw.Write(false.ToString());
+                        }
+                    }
+
+                    return responseVal;
+                }
+                else
+                {
+                    _logger.Info("Admin mode enabled, not recording checkin, sending result to force picture download.");
+                    return true.ToString();
                 }
 
-                return responseVal;
-
-                }
+            }
             catch (Exception ex)
             {
                 _logger.Error(ex);
